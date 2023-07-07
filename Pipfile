@@ -11,6 +11,7 @@ sentencepiece = "*"
 fastapi = "*"
 sse-starlette = "*"
 uvicorn = {version = "*", extras = ["standard"]}
+openai = "*"
 
 [dev-packages]
 yapf = "*"
