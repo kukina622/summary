@@ -16,15 +16,8 @@ async def summary_route(request: Request):
   streamer = summarize(body["content"])
 
   async def event_generator():
-    while True:
-
-      if await request.is_disconnected():
-        break
-
-      for new_text in streamer:
-        yield {"text": new_text}
-
-      await asyncio.sleep(MESSAGE_STREAM_DELAY)
+    for new_text in streamer:
+      yield {"data": new_text}
 
   return EventSourceResponse(event_generator())
 
