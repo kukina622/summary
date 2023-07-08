@@ -2,18 +2,25 @@ import asyncio
 import uvicorn
 from fastapi import FastAPI, Request
 from sse_starlette.sse import EventSourceResponse
-from usecase.summary import load_model, summarize
+from usecase import vicuna, gpt
 
 MESSAGE_STREAM_DELAY = 1
 MESSAGE_STREAM_RETRY_TIMEOUT = 15000
 
 app = FastAPI()
+vicuna.load_model()
 
+@app.post("/summary/gpt")
+async def gpt_route(request: Request):
+  body = await request.json()
+  content = body["content"]
+  result = gpt.summarize(content)
+  return {"data": result}
 
 @app.post('/summary')
-async def summary_route(request: Request):
+async def vicuna_route(request: Request):
   body = await request.json()
-  streamer = summarize(body["content"])
+  streamer = vicuna.summarize(body["content"])
 
   async def event_generator():
     for new_text in streamer:
@@ -23,5 +30,4 @@ async def summary_route(request: Request):
 
 
 if __name__ == "__main__":
-  load_model()
   uvicorn.run(app, host="127.0.0.1", port=8000)
