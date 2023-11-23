@@ -4,14 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-auto-gptq = "*"
-opencc-python-reimplemented = "*"
-transformers = "*"
-sentencepiece = "*"
 fastapi = "*"
-sse-starlette = "*"
 uvicorn = {version = "*", extras = ["standard"]}
-openai = "*"
+bardapi = "*"
+redis = "*"
 
 [dev-packages]
 yapf = "*"
