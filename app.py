@@ -39,28 +39,25 @@ async def bard_route(request: Request):
 
   sentiment_count = getArticlesSentimentByKey(key)
   addresses = getAddressByKey(key)
+  
+  summary = summarize(topic, articles, sentiment_count, addresses, 300)
 
-  summaries = {}
-  for word_count in [60, 90, 150]:
-    summary = summarize(topic, articles, sentiment_count, addresses, word_count)
+  if ("語言模型" in summary and "我" in summary) or ("文字型人工智慧" in summary and "我" in summary):
+    summary = "目前無相關討論"
 
-    if ("語言模型" in summary and "我" in summary) or ("文字型人工智慧" in summary and "我" in summary):
-      summary = "目前無相關討論"
-
-    summary = f"""
-    **正負向討論數量:**
-    正向: {sentiment_count['positive_count']} | 負向: {sentiment_count["negative_count"]}
-    {summary}
-    """.strip()
-    summaries[word_count] = summary
-  return {"summaries": summaries, "address": addresses}
+  summary = f"""
+  **正負向討論數量:**
+  正向: {sentiment_count['positive_count']} | 負向: {sentiment_count["negative_count"]}\n
+  {summary}
+  """.strip()
+    # summaries[word_count] = summary
+  return {"summary": summary, "address": addresses}
 
 @app.post('/summary/{address}')
 async def bard_address_route(address: str, request: Request):
   body = await request.json()
   key = body["key"]
   topic = body["topic"]
-  word_count = body["wordCount"]
 
   articles = {
       "positive": getArticleByKeyAndField(key, "PositiveNews"),
@@ -72,20 +69,17 @@ async def bard_address_route(address: str, request: Request):
   sentiment_count = getArticlesSentimentByKey(key)
   city = city_code.get(int(address), "未知地區")
 
-  summaries = {}
-  for word_count in [60, 90, 150]:
-    summary = summarize_by_city(topic, articles, sentiment_count, city, word_count)
-    
-    if ("語言模型" in summary and "我" in summary) or ("文字型人工智慧" in summary and "我" in summary):
-      summary = "目前無相關討論"
+  summary = summarize_by_city(topic, articles, sentiment_count, city, 300)
+  
+  if ("語言模型" in summary and "我" in summary) or ("文字型人工智慧" in summary and "我" in summary):
+    summary = "目前無相關討論"
 
-    summary = f"""
-    地區: {city} \n
-    {summary}
-    """.strip()
-    summaries[word_count] = summary
+  summary = f"""
+  地區: {city} \n
+  {summary}
+  """.strip()
 
-  return {"summaries": summaries}
+  return {"summary": summary}
 
 def run_server():
   uvicorn.run(app, host="127.0.0.1", port=8000)
