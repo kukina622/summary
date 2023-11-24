@@ -2,7 +2,6 @@ import configparser
 from bardapi import Bard
 import redis
 import re
-import datetime
 import json
 import redis
 import sys
@@ -31,7 +30,7 @@ def summarize(topic: str, articles, sentiment_count, address, word_count = 150):
 
   instruction = """
   你是一個文章摘要生成器，將會閱讀的文章後，提供使用者文章中對主題的摘要。
-  摘要內容只需要列出這5點，並用粗體把標題標註。
+  摘要內容只需且必須要列出這5點，並用粗體把標題標註。
   1. 事件經過
   2. 大眾評價看法
   3. 正負向討論點
@@ -74,7 +73,7 @@ def summarize(topic: str, articles, sentiment_count, address, word_count = 150):
   prompt = instruction.format(
     word_count         = word_count,
     topic              = topic, 
-    positive_article   = articles_positive  if len(articles["positive"]) > 0 else "無",
+    positive_article   = articles_positive   if len(articles["positive"]) > 0 else "無",
     negative_article   = articles_negative   if len(articles["negative"]) > 0 else "無",
     popularity_article = articles_popularity if len(articles["popularity"]) > 0 else "無",
     address_1          = address[0] if len(address) > 0 else "無",
@@ -89,7 +88,7 @@ def summarize_by_city(topic: str, articles, sentiment_count, city, word_count = 
 
   instruction = """
   你是一個文章摘要生成器，將會閱讀的文章後，提供使用者文章中對主題的摘要。
-  摘要內容只需要列出這5點，並用粗體把標題標註。
+  摘要內容只需且必須要列出這5點，並用粗體把標題標註。
   1. 事件經過
   2. {city}民眾評價看法
   3. 正負向討論點
