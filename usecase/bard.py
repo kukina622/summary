@@ -1,10 +1,12 @@
 import configparser
-from bardapi import Bard
+import datetime
+from bardapi import Bard, SESSION_HEADERS
 import redis
 import re
 import json
 import redis
 import sys
+
 sys.path.append("..")
 from util.city_translation import city_translation
 
@@ -66,9 +68,9 @@ def summarize(topic: str, articles, sentiment_count, address, word_count = 150):
   ###
   摘要: """
 
-  articles_positive = "---\n".join(articles["positive"])
-  articles_negative = "---\n".join(articles["negative"])
-  articles_popularity = "---\n".join(articles["popularity"])
+  articles_positive = "---\n".join(articles["positive"])[:800]
+  articles_negative = "---\n".join(articles["negative"])[:800]
+  articles_popularity = "---\n".join(articles["popularity"])[:800]
 
   prompt = instruction.format(
     word_count         = word_count,
@@ -120,9 +122,9 @@ def summarize_by_city(topic: str, articles, sentiment_count, city, word_count = 
   ###
   摘要: """
 
-  articles_positive = "---\n".join(articles["positive"])
-  articles_negative = "---\n".join(articles["negative"])
-  articles_popularity = "---\n".join(articles["popularity"])
+  articles_positive = "---\n".join(articles["positive"])[:800]
+  articles_negative = "---\n".join(articles["negative"])[:800]
+  articles_popularity = "---\n".join(articles["popularity"])[:800]
 
   prompt = instruction.format(
     word_count         = word_count,
@@ -139,10 +141,15 @@ def summarize_by_city(topic: str, articles, sentiment_count, city, word_count = 
 def getArticleByKeyAndField(key, field):
   articleDictBydate = cache.hget(key, field).decode()
   articleDictBydate = json.loads(articleDictBydate)
-
+  sorted_dates = sorted(
+    articleDictBydate.keys(),
+    key=lambda date: datetime.datetime.strptime(date, "%Y-%m-%d"),
+  )
+  
   merged = []
-  for date in articleDictBydate.keys():
-    merged += [shrink_spaces_and_newlines(article) for article in articleDictBydate[date]]
+  for date in sorted_dates:
+    merged += [shrink_spaces_and_newlines(article)[:400] for article in articleDictBydate[date]]
+
   return merged
 
 def getArticlesSentimentByKey(key):
